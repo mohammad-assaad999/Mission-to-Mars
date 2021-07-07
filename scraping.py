@@ -19,7 +19,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "mars_urls_titles": mars_urls_titles()
     }
 
     # Stop webdriver and return data
@@ -101,3 +102,43 @@ if __name__ == "__main__":
 
     # If running as script, print scraped data
     print(scrape_all()) 
+
+def mars_urls_titles():
+    
+    # Set the executable path and initialize Splinter
+    executable_path = {'executable_path': ChromeDriverManager().install()}
+    browser = Browser('chrome', **executable_path, headless=False)
+
+    
+    url = 'https://marshemispheres.com/'
+
+    browser.visit(url)
+
+    hemisphere_image_urls = []
+
+    y=[3,4,5,6]
+    for x in y:
+        hemispheres = {}
+        full_image_elem = browser.find_by_tag('img')[x]
+        full_image_elem.click()
+
+        html = browser.html
+        img_soup = soup(html, 'html.parser')
+
+        img_url_rel = img_soup.find('img', class_='thumb').get('src')
+        img_url = f'https://marshemispheres.com/{img_url_rel}'
+        hemispheres['img_url']=img_url
+
+        html = browser.html
+        html_soup = soup(html, 'html.parser')
+
+        title = html_soup.find('h2').text
+        hemispheres['title']=title
+
+        hemisphere_image_urls.append(hemispheres)
+        browser.back()
+
+    hemisphere_image_urls
+    browser.quit()
+
+    return hemisphere_image_urls
